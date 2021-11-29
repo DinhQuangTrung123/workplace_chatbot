@@ -1,0 +1,178 @@
+{% extends "html/admin_layout.html" %}
+{% block content %}
+<div class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-12 col-sm-12 col-12">
+          <button class="btn btn-warning" onclick="SyncUser()"> Sync User  <i class="fas fa-sync"></i></button>
+        </div>
+      </div>
+      <!-- /.row -->
+    </div><!-- /.container-fluid -->
+  </div>
+  <!-- Main content -->
+  <br />
+  <div class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-12 col-sm-12 col-12">
+          <div class="card card-primary">
+            <div class="card-header">
+              <h3 class="card-title">User Lists</h3>
+            </div>
+            <!-- /.card-header -->
+            <!-- form start -->
+            <div class="card-body">
+              <table id='userTable' class="table table-bordered table-striped">
+                <thead></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <!-- /.card-body -->
+          </div>
+          <!-- /.info-box -->
+        </div>
+      </div>
+      <!-- /.row -->
+    </div><!-- /.container-fluid -->
+  </div>
+  <!-- /.content -->
+<script>
+let url = '/setting';
+let localData;
+
+  function renderTable(data) {
+    table.clear();
+    table.rows.add(data);
+    table.draw();
+  }
+
+function SyncUser(data){
+    console.log(data)
+    let uri = url + '/sync_user_campaign';
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+      if (result.value) {
+        $.ajax({
+          dataType: "json",
+          type: "get",
+          data: JSON.stringify({
+          }),
+          url: uri,
+          contentType: "application/json",
+          beforeSend: () => {
+
+          },
+          complete: () => {
+
+          },
+          success: (resp) => {
+            if (resp.status === true) {
+                showSuccessNoti("Sync Success");
+                get_all_user();
+            } else {
+              showErrorNoti("Sync User Failed");
+            }
+          },
+          error: function (xhr, status, error) {
+            var err = eval("(" + xhr.responseText + ")");
+            showErrorNoti(err.msg);
+          }
+        });
+      }
+    });
+  }
+
+
+function get_all_user(){
+  uri = url + '/all_user_campaign'
+  $.ajax({
+    dataType: "json",
+    type: 'get',
+    url : uri,
+    contentType: "application/json",
+    beforeSend: () => {},
+    complete: () => {},
+    success: (resp) =>{
+      if (resp.status == true){
+        console.table(resp.dt.user)
+        renderTable(resp.dt.user);
+      }
+      else{
+        showErrorNoti("Load user failed");
+      }
+    }
+  });
+};
+
+$(document).ready(function(){
+get_all_user()
+
+table = $('#userTable').DataTable({
+      "lengthMenu": [10, 50, 75, 100, 200, 250],
+      "order": [[0, "desc"]],
+      "columnDefs": [
+        { "orderable": true, "targets": [] },
+        { "orderable": false, "targets": [0, 1, 2] },
+        { "searchable": true, "targets": [1,2] },
+        { "searchable": false, "targets": [1, 2] },
+      ],
+      "paging": true,
+      "lengthChange": true,
+      "searching": true,
+      "ordering": true,
+      "info": true,
+      "autoWidth": false,
+      "responsive": true,
+      "columns": [
+        {
+          "title": "User ID",
+          "width": "75px",
+          "data": 'user_id'
+        },
+        {
+          "title": "User Name",
+          "width": "125px",
+          "data": 'username'
+        },
+        {
+          "title": "Email",
+          "width": "75px",
+          "data": 'email'
+        },
+        {
+          "title": "Group",
+          "width": "125px",
+          "data": 'user_group_campaign_mapping',
+          "render" : function (data, type, row){
+              html = '<td>'
+              $.each(data, function(key, values){
+                  html = html + values.group_name + ', '
+              });
+              console.log(html)
+              return html = html + '</td>'
+          }
+        }
+        /*,
+        {
+          "title": "Actions",
+          "width": "75px",
+          "data": 'id',
+          "render": function (data, type, row) {
+            let uri = "/" + url + "/update_route" + "/" + row.acc_id;
+            let html = '<center><button data-action="updateGroup" type="button" class="btn btn-info btn-sm"><i class="fa fas fa-edit"></i></button>&nbsp; <button data-action="deleteGroup" type="button" class="btn btn-danger btn-sm"><i class="fa fas fa-trash"></i></button></center>';
+            return html;
+          }
+        }*/
+      ]
+    });
+})
+</script>
+{% endblock %}

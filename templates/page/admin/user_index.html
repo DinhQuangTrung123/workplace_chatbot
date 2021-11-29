@@ -1,0 +1,135 @@
+{% extends "html/admin_layout.html" %}
+{% block content %}
+<div class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-12 col-sm-12 col-12">
+          <button class="btn btn-primary" onclick="#">Add <i class="fas fa-plus"></i></button>
+        </div>
+      </div>
+      <!-- /.row -->
+    </div><!-- /.container-fluid -->
+  </div>
+  <!-- Main content -->
+  <br />
+  <div class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-12 col-sm-12 col-12">
+          <div class="card card-primary">
+            <div class="card-header">
+              <h3 class="card-title">User Lists</h3>
+            </div>
+            <!-- /.card-header -->
+            <!-- form start -->
+            <div class="card-body">
+              <table id='userTable' class="table table-bordered table-striped">
+                <thead></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <!-- /.card-body -->
+          </div>
+          <!-- /.info-box -->
+        </div>
+      </div>
+      <!-- /.row -->
+    </div><!-- /.container-fluid -->
+  </div>
+  <!-- /.content -->
+<script>
+let url = '/admin';
+let localData;
+
+  function renderTable(data) {
+    table.clear();
+    table.rows.add(data);
+    table.draw();
+  }
+
+function get_all_user(){
+  uri = url + '/get_all_user'
+  $.ajax({
+    dataType: "json",
+    type: 'get',
+    url : uri,
+    contentType: "application/json",
+    beforeSend: () => {},
+    complete: () => {},
+    success: (resp) =>{
+      if (resp.state == true){
+        showSuccessNoti(resp.state);
+        renderTable(resp.dt);
+      }
+      else{
+        showErrorNoti(resp.state);
+      }
+    }
+  });
+};
+
+$(document).ready(function(){
+get_all_user()
+
+table = $('#userTable').DataTable({
+      "lengthMenu": [10, 50, 75, 100, 200, 250],
+      "order": [[0, "desc"]],
+      "columnDefs": [
+        { "orderable": true, "targets": [] },
+        { "orderable": false, "targets": [0, 1, 2] },
+        { "searchable": true, "targets": [1,2] },
+        { "searchable": false, "targets": [1, 2] },
+      ],
+      "paging": true,
+      "lengthChange": true,
+      "searching": true,
+      "ordering": true,
+      "info": true,
+      "autoWidth": false,
+      "responsive": true,
+      "columns": [
+        {
+          "title": "Id",
+          "width": "75px",
+          "data": 'id'
+        },
+        {
+          "title": "User Name",
+          "width": "125px",
+          "data": 'username'
+        },
+        {
+          "title": "Full Name",
+          "width": "75px",
+          "data": 'fullname'
+        },
+        {
+          "title": "Email",
+          "width": "125px",
+          "data": 'email'
+        },
+        {
+          "title": "Created By",
+          "width": "125px",
+          "data": 'created_by'
+        },
+        {
+          "title": "Group Name",
+          "width": "125px",
+          "data": 'groupname'
+        },
+        {
+          "title": "Actions",
+          "width": "75px",
+          "data": 'id',
+          "render": function (data, type, row) {
+            let uri = "/" + url + "/update_route" + "/" + row.acc_id;
+            let html = '<center><button data-action="updateGroup" type="button" class="btn btn-info btn-sm"><i class="fa fas fa-edit"></i></button>&nbsp; <button data-action="deleteGroup" type="button" class="btn btn-danger btn-sm"><i class="fa fas fa-trash"></i></button></center>';
+            return html;
+          }
+        }
+      ]
+    });
+})
+</script>
+{% endblock %}

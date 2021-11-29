@@ -1,0 +1,285 @@
+{% extends "html/admin_layout.html" %}
+{% block content %}
+    <!-- Main content -->
+    <section class="content">
+      <div class="container-fluid">
+       <div class="card-body">
+        <div id="actions" class="row">
+              <div class="col-lg-6">
+            <select id="CampaignInput" class="form-control select2bs4" style="width: 100%;">
+                <option  selected="selected" value="-1">-- Please Selected --</option>
+              </select>
+              </div>
+              <div class="col-lg-6 d-flex align-items-center">
+                <div class="btn-group w-100">
+                  <button onclick="GetReport()" class="btn btn-info col start">
+                    <span>Get Report</span>
+                  </button>
+                  <button onclick="SyncStatus()" class="btn btn-primary col start">
+                    <span>Sync Status</span>
+                  </button>
+                  <button onclick="ExportData()" class="btn btn-warning col cancel">
+                    <i class="fas fa-download"></i>
+                    <span>Export</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+      </div>
+        <div class="row">
+        <div class="col-md-12 col-sm-12 col-12">
+          <div class="card card-primary">
+            <div class="card-header">
+              <h3 class="card-title">Report Campaign</h3>
+            </div>
+            <!-- /.card-header -->
+            <!-- form start -->
+            <div class="card-body">
+              <table id='reportTable' class="table table-bordered table-striped">
+                <thead></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <!-- /.card-body -->
+          </div>
+          <!-- /.info-box -->
+        </div>
+      </div>
+      <!-- /.row -->
+      </div>
+      <!-- ./container-fluid-->
+    </section>
+    <!-- /.content -->
+<script>
+
+let uri = '/report';
+let localData;
+
+function renderTable(data) {
+    table.clear();
+    table.rows.add(data);
+    table.draw();
+  }
+
+$('.select2bs4').select2(
+  {theme: 'bootstrap4',}
+)
+
+
+function renderCapaign(){
+  let url = uri + '/get_report'
+  $.ajax({
+    dataType: "json",
+    type: 'get',
+    url : url,
+    contentType: "application/json",
+    beforeSend: () => {},
+    complete: () => {},
+    success: (resp) =>{
+      if (resp.status == true){
+        $.each(resp.dt ,function(key, values){
+            campaign_id = values.campaign_id
+            campaign_name =  values.campaign_name
+            $("#CampaignInput").append(`<option value="${campaign_id}">${campaign_name}</option>`)
+          });
+      }
+      else{
+        showErrorNoti(resp.msg);
+      }
+    }
+  });
+};
+
+function GetReport(){
+    let validate = false;
+    $("#CampaignInput").removeClass("is-invalid");
+    let campaign_id = $("#CampaignInput").val()
+    if (campaign_id == -1 || campaign_id == '') {
+      $("#CampaignInput").addClass("is-invalid");
+      return;
+    }else{
+      validate = true
+    }
+    if(validate === true){
+        Swal.fire({
+        title: 'Are you sure get report?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, save it!'
+      }).then((result) => {
+        if (result.value) {
+          $.ajax({
+            dataType: "json",
+            type: "post",
+            data: JSON.stringify({
+                "campaign_id" : campaign_id
+            }),
+            url: uri + '/get_report' ,
+            contentType: "application/json",
+            beforeSend: () => {},
+            complete: () => {
+            },
+            success: (resp) => {
+              if(resp.status == true){
+                localData = resp.dt
+                renderTable(resp.dt)
+                showSuccessNoti("Success");
+              }else{
+                showErrorNoti(resp.msg);
+                table.clear();
+                table.draw();
+              }
+              
+            },
+            error: function (xhr, status, error) {
+              if (parseInt(xhr.status) === 401) {
+                window.location.href = '/login';
+              } else if (parseInt(xhr.status) === 404) {
+                window.location.href = '/error/' + xhr.status;
+              }
+              var err = eval("(" + xhr.responseText + ")");
+              showErrorNoti(err.msg);
+            }
+          });
+        }
+      });
+    }
+}
+
+function SyncStatus(){
+    let validate = false;
+    $("#CampaignInput").removeClass("is-invalid");
+    let campaign_id = $("#CampaignInput").val()
+    if (campaign_id == -1 || campaign_id == '') {
+      $("#CampaignInput").addClass("is-invalid");
+      return;
+    }else{
+      validate = true
+    }
+    if(validate === true){
+        Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, save it!'
+      }).then((result) => {
+        if (result.value) {
+          $.ajax({
+            dataType: "json",
+            type: "post",
+            data: JSON.stringify({
+                "campaign_id" : campaign_id
+            }),
+            url: uri + '/sync_status_msg_campaign' ,
+            contentType: "application/json",
+            beforeSend: () => {},
+            complete: () => {
+            },
+            success: (resp) => {
+              if(resp.status == true){
+                  GetReport()
+              }else{
+                showErrorNoti(resp.msg);
+                table.clear();
+                table.draw();
+              }
+              
+            },
+            error: function (xhr, status, error) {
+              if (parseInt(xhr.status) === 401) {
+                window.location.href = '/login';
+              } else if (parseInt(xhr.status) === 404) {
+                window.location.href = '/error/' + xhr.status;
+              }
+              var err = eval("(" + xhr.responseText + ")");
+              showErrorNoti(err.msg);
+            }
+          });
+        }
+      });
+    }
+}
+
+function ExportData(){
+  if (localData == undefined){
+      showErrorNoti('Please get the report before downloading !!!');
+      return
+  }
+  else{
+    const data = localData 
+    const fileName = 'report_dowload'
+    const exportType = 'xls'  
+   
+    window.exportFromJSON({ data, fileName, exportType })  
+  }};
+
+  $(document).ready(function(){
+  renderCapaign()
+
+  table = $('#reportTable').DataTable({
+      "lengthMenu": [10, 50, 75, 100, 200, 250],
+      "order": [[0, "desc"]],
+      "columnDefs": [
+        { "orderable": true, "targets": [] },
+        { "orderable": false, "targets": [0, 1, 2] },
+        { "searchable": true, "targets": [1,2] },
+        { "searchable": false, "targets": [1, 2] },
+      ],
+      "paging": true,
+      "lengthChange": true,
+      "searching": true,
+      "ordering": true,
+      "info": true,
+      "autoWidth": false,
+      "responsive": true,
+      "columns": [
+        {
+          "title": "Campaign Name",
+          "width": "100px",
+          "data": 'campaign_name'
+        },
+        {
+          "title": "Campaign Content",
+          "width": "125px",
+          "data": 'campaign_content',
+          "render": function (data, type, row) {
+            let html = '<textarea cols="30" disabled>' + data + '</textarea>';
+            return html;
+          }
+        },
+        {
+          "title": "Send By",
+          "width": "75px",
+          "data": 'user_send'
+        },
+        {
+          "title": "Send At",
+          "width": "125px",
+          "data": 'time_send'
+        },
+        {
+          "title": "Send To",
+          "width": "125px",
+          "data": 'user_receiver'
+        },
+        {
+          "title": "Status",
+          "width": "125px",
+          "data": 'status'
+        },
+        {
+          "title": "Time Reply",
+          "width": "125px",
+          "data": 'time_reply'
+        }
+      ]
+    });
+})
+    </script>
+{% endblock %}

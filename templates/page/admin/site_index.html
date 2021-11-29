@@ -1,0 +1,238 @@
+{% extends "html/admin_layout.html" %}
+{% block content %}
+
+<div class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-12 col-sm-12 col-12">
+          <button class="btn btn-primary" onclick="addTemplate()">Add <i class="fas fa-plus"></i></button>
+        </div>
+      </div>
+      <!-- /.row -->
+    </div><!-- /.container-fluid -->
+  </div>
+  <!-- Main content -->
+  <br />
+  <div class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-12 col-sm-12 col-12">
+          <div class="card card-primary">
+            <div class="card-header">
+              <h3 class="card-title">Group</h3>
+            </div>
+            <!-- /.card-header -->
+            <!-- form start -->
+            <div class="card-body">
+              <table id='groupTable' class="table table-bordered table-striped">
+                <thead></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <!-- /.card-body -->
+          </div>
+          <!-- /.info-box -->
+        </div>
+      </div>
+      <!-- /.row -->
+    </div><!-- /.container-fluid -->
+  </div>
+  <!-- /.content -->
+
+<div class="modal fade" id="groupFormModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Group</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Name</label>
+          <input id="idgroup" type="text" class="form-control" placeholder="Enter name">
+        </div>
+        <div class="form-group">
+          <label>Owner</label>
+          <input id="groupname" type="text" class="form-control" placeholder="Enter name">
+        </div>
+        <div class="form-group">
+          <label>Team Owner</label>
+          <input id="TeamownerInput" type="text" class="form-control", placeholder="Enter name">
+        </div>
+        <div class="form-group">
+          <label>Content</label>
+          <textarea id="contentTemplateInput" class="form-control" placeholder="Enter note"></textarea>
+        </div>
+        <!--<div class="form-group">
+          <label>Status</label>
+          <select id="statusSelect" class="form-control col-md-6 col-sm-6 col-12">
+            <option value="-1">--Please Select--</option>
+            <option value="0">Disabled</option>
+            <option value="1">Enabled</option>
+          </select>
+        </div>-->
+
+      </div>
+      <div class="modal-footer justify-content-between">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="saveData()">Save changes</button>
+      </div>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
+<script>
+let url = '/admin';
+let localData;
+let GroupData = {
+    "id": "",
+    "updated_at" : "",
+    "updated_by" : "{{username}}"
+
+}
+
+
+function rendertalbe(data){
+  table.clear();
+  table.rows.add(data);
+  table.draw();
+}
+
+function get_all_data(){
+  uri = url + '/get_all_group'
+  $.ajax({
+    dataType: "json",
+    type: 'get',
+    url : uri,
+    contentType: "application/json",
+    beforeSend: () => {},
+    complete: () => {},
+    success: (resp) =>{
+      if (resp.state == true){
+        showSuccessNoti(resp.msg);
+        rendertalbe(resp.dt);
+      }
+      else{
+        showErrorNoti(resp.state);
+      }
+    }
+  });
+};
+
+function addTemplate() {
+    action = "addTemplate";
+
+    /*$("#nameTemplateInput").val('');
+    $("#ownerInput").val('');
+    $("#TeamownerInput").val('');
+    $("#contentTemplateInput").val('');
+    $("#statusSelect").val(-1);
+    $("#nameTemplateInput").attr("disabled", false);
+    $("#templateSelect").attr("disabled", false);
+
+    $("#templateFormModal").find("h4").html("Add Template");*/
+    $("#groupFormModal").modal("show");
+  }
+
+$(document).ready(function(){
+get_all_data()
+
+table = $('#groupTable').DataTable({
+      "lengthMenu": [10, 50, 75, 100, 200, 250],
+      "order": [[0, "desc"]],
+      "columnDefs": [
+        { "orderable": false, "targets": [] },
+        { "orderable": false, "targets": [0, 1, 2] },
+        { "searchable": true, "targets": [1,2] },
+        { "searchable": false, "targets": [1, 2] },
+      ],
+      "paging": true,
+      "lengthChange": true,
+      "searching": true,
+      "ordering": false,
+      "info": true,
+      "autoWidth": false,
+      "responsive": false,
+      "columns": [
+        {
+          "title": "ID",
+          "width": "75px",
+          "data": 'id',
+        },
+        {
+          "title": "Group Name",
+          "width": "75px",
+          "data": 'groupname',
+        },
+        {
+          "title": "Created At",
+          "width": "75px",
+          "data": 'created_at',
+        },
+        {
+          "title": "Created By",
+          "width": "125px",
+          "data": 'created_by',
+        },
+        {
+          "title": "Modified At",
+          "width": "75px",
+          "data": 'modified_at',
+        },
+
+        {
+          "title": "Modified By",
+          "width": "125px",
+          "data": 'modified_by'
+        },
+        {
+          "title": "Actions",
+          "width": "75px",
+          "data": 'id',
+          "render": function (data, type, row) {
+            let uri = "/" + url + "/update_route" + "/" + row.acc_id;
+            let html = '<center><button data-action="updateGroup" type="button" class="btn btn-info btn-sm"><i class="fa fas fa-edit"></i></button>&nbsp; <button data-action="deleteGroup" type="button" class="btn btn-danger btn-sm"><i class="fa fas fa-trash"></i></button></center>';
+            return html;
+          }
+        }
+      ]
+    });
+        $('#groupTable tbody').on('click', 'button', function () {
+
+      action = $(this).data('action');
+      GroupData.updated_at = new Date().getTime() / 1000;
+      GroupData.id = $(this).parents('tr').find('td:eq(0)').text();
+      console.log(GroupData)
+      $("#nameTemplateInput").attr("disabled", false);
+      $("#templateSelect").attr("disabled", false);
+      /*switch (action) {
+        case 'updateTemplate':
+          $("#templateFormModal").find("h4").html("Update Template");
+          $("#nameTemplateInput").attr("disabled", true);
+          $("#nameTemplateInput").val($(this).parents('tr').find('td:eq(1)').text());
+          $("#ownerInput").val($(this).parents('tr').find('td:eq(2)').text());
+          $("#TeamownerInput").val($(this).parents('tr').find('td:eq(3)').text());
+          $("#contentTemplateInput").val($(this).parents('tr').find('td:eq(4)').text());
+          switch ($(this).parents('tr').find('td:eq(5)').text()) {
+            case "Disabled":
+              $("#statusSelect").val(0);
+              break;
+            case "Enabled":
+              $("#statusSelect").val(1);
+              break;
+          }
+          $("#templateFormModal").modal("show");
+          break;
+        case 'deleteTemplate':
+          deleteTemplate();
+          break;
+      }*/
+
+    });
+})
+</script>
+{% endblock %}

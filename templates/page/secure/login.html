@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scc Login</title>
+  <!-- jQuery -->
+  <script src="{% static 'plugins/jquery/jquery.min.js' %}"></script>
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="{% static 'plugins/fontawesome-free/css/all.min.css'%}">
+  <!-- icheck bootstrap -->
+  <link rel="stylesheet" href="{% static 'plugins/icheck-bootstrap/icheck-bootstrap.min.css'%}">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="{% static 'dist/css/adminlte.min.css'%}">
+    <!-- Toastr -->
+  <link rel="stylesheet" href="{% static 'plugins/toastr/toastr.min.css'%}">
+  <script src="{% static 'plugins/toastr/toastr.min.js'%}"></script>
+  <!-- Custom -->
+  <script src="{% static 'dist/js/custom.js'%}"></script>
+</head>
+<body class="hold-transition login-page" >
+<div class="view" stype="background-image: {% static 'dist/img/photo4.jpg' %};">
+<div class="login-box">
+  <!-- /.login-logo -->
+  <div class="card card-outline card-primary">
+    <div class="card-header text-center">
+      <a class="h1"><b>Scc Chat Bot</b></a>
+    </div>
+    <div class="card-body">
+      <p class="login-box-msg">Sign in to start your session</p>
+       <form method="POST">
+          {% csrf_token %}
+
+          {% if form.errors %}
+              <center><p style="color: red;font-weight: bold;">Bạn đã nhập sai tên hoặc mật khẩu vui lòng nhập lại thông tin.</p></center> 
+          {% endif %}
+
+          <div class="input-group mb-3">
+            <input type="text" class="form-control" name="username" placeholder="Email" required id="id_username" >
+            <div class="input-group-append">
+              <div class="input-group-text">
+                <span class="fas fa-envelope"></span>
+              </div>
+            </div>
+          </div>
+          <div class="input-group mb-3">
+            <input type="password" class="form-control"  name="password"  required id="id_password" placeholder="Password" id="password">
+            <div class="input-group-append">
+              <div class="input-group-text">
+                <span class="fas fa-lock"></span>
+              </div>
+            </div>
+          </div>
+      
+        <div class="row">
+          <div class="col-8">
+            <div class="icheck-primary">
+              <input type="checkbox" id="remember">
+              <label for="remember">
+                Remember Me
+              </label>
+            </div>
+          </div>
+          <!-- /.col -->
+          <div class="col-4">
+            <button type="submit" class="btn btn-primary btn-block" onclick="doLogin()">Sign In</button>
+          </div>
+          <!-- /.col -->
+          </form>
+        </div>
+    <!-- /.
+      <div class="social-auth-links text-center mt-2 mb-3">
+        <a href="#" class="btn btn-block btn-primary">
+          <i class="fab fa-facebook mr-2"></i> Sign in using Facebook
+        </a>
+        <a href="#" class="btn btn-block btn-danger">
+          <i class="fab fa-google-plus mr-2"></i> Sign in using Google+
+        </a>
+      </div>
+      social-auth-links -->
+
+      <p class="mb-1">
+        <a href="forgot-password.html">I forgot my password</a>
+      </p>
+      <p class="mb-0">
+        <a href="register.html" class="text-center">Register a new membership</a>
+      </p>
+    </div>
+    <!-- /.card-body -->
+  </div>
+  <!-- /.card -->
+</div>
+</div>
+<!-- /.login-box -->
+
+<!-- jQuery -->
+<script src="{% static 'plugins/jquery/jquery.min.js'%}"></script>
+<!-- Bootstrap 4 -->
+<script src="{% static 'plugins/bootstrap/js/bootstrap.bundle.min.js'%}"></script>
+<!-- AdminLTE App -->
+<script src="{% static 'dist/js/adminlte.min.js'%}"></script>
+<script>
+function doLogin() {
+      let username = $("#username").val();
+      let password = $("#password").val();
+
+      if (!username) {
+        $("#username").addClass('is-invalid').append($("</span>").addClass("error invalid-feedback").html("Username not blank"));
+        $("#password").removeClass('is-invalid');
+        return false;
+      }
+      else if (!password) {
+        $("#password").addClass('is-invalid').append($("</span>").addClass("error invalid-feedback").html("Password not blank"));
+        $("#username").removeClass('is-invalid');
+        return false;
+      } else {
+        $.ajax({
+          dataType: "json",
+          type: "post",
+          url: "/login/",
+          contentType: "application/json",
+          data: JSON.stringify(
+            {
+              "username": username,
+              "password": password
+            }
+          ),
+          beforeSend: () => {
+
+          },
+          complete: () => {
+
+          },
+          success: (resp) => {
+            //console.log(resp.status)
+            if (resp && resp.status == true) {
+               /*
+               $.ajax({
+                        type: "get",
+                        url:"{% url 'adminsite:home' %}",
+                        data: resp,
+                        contentType: 'application/json',
+                        success: function(datareponse){
+                          console.log(datareponse)
+                        },
+                        
+                    });
+                    */
+               //window.location = 'http://localhost:8000/'
+              //localStorage.setItem("token", resp.dt.token);
+              //  let uri = resp.dt.uri
+              //window.location.href = uri
+
+              console.log(resp)
+            } else {
+              showErrorNoti(resp.messge);
+            }
+          },
+          error: function (xhr, status, error) {
+            var err = eval("(" + xhr.responseText + ")");
+            //showErrorNoti(resp.msg);
+          }
+        });
+      }
+    }
+
+    $(document).on('keypress', function (e) {
+      if (e.which == 13) {
+        doLogin();
+      }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,331 @@
+{% extends "html/admin_layout.html" %}
+{% block content %}
+
+<div class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-12 col-sm-12 col-12">
+          <button class="btn btn-primary" onclick="addGroup()">Add <i class="fas fa-plus"></i></button>
+        </div>
+      </div>
+      <!-- /.row -->
+    </div><!-- /.container-fluid -->
+  </div>
+  <!-- Main content -->
+  <br />
+  <div class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-12 col-sm-12 col-12">
+          <div class="card card-primary">
+            <div class="card-header">
+              <h3 class="card-title">Group</h3>
+            </div>
+            <!-- /.card-header -->
+            <!-- form start -->
+            <div class="card-body">
+              <table id='groupTable' class="table table-bordered table-striped">
+                <thead></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <!-- /.card-body -->
+          </div>
+          <!-- /.info-box -->
+        </div>
+      </div>
+      <!-- /.row -->
+    </div><!-- /.container-fluid -->
+  </div>
+  <!-- /.content -->
+
+<div class="modal fade" id="groupFormModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Group</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group" style="display: none;">
+          <input id="idGroup" type="text" class="form-control">
+        </div>
+        <div class="form-group" style="display: none;">
+          <input id="actionInput" type="text" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Group Name</label>
+          <input id="groupname" type="text" class="form-control" placeholder="Enter Group name">
+        </div>
+          <div class="form-group">
+              <label>Choice Users</label>
+              <select id="userChoiceInput_dualbox" class="duallistbox" multiple="multiple">
+              </select>
+          </div>
+      </div>
+      <div class="modal-footer justify-content-between">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="saveData()">Save changes</button>
+      </div>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
+<script>
+var user_login= $("#user_session").val()
+let url = '/setting';
+let localData;
+let list_user = [];
+let GroupData = {
+    "id": "",
+    "updated_at" : "",
+    "updated_by" : ""
+
+}
+
+function rendertalbe(data){
+  table.clear();
+  table.rows.add(data);
+  table.draw();
+}
+
+function get_all_group(){
+  let uri = '/setting/all_group_campaign';
+
+  $.ajax({
+    dataType: "json",
+    type: 'get',
+    url : uri,
+    contentType: "application/json",
+    beforeSend: () => {},
+    complete: () => {},
+    success: (resp) =>{
+      if (resp.status === true){
+          list_user = resp.dt.user
+          //console.table(resp.dt.group)
+          rendertalbe(resp.dt.group);
+          renderUserlist();
+      }
+      else{
+        showErrorNoti("Load group failed !!!");
+      }
+    }
+  });
+};
+
+function addGroup() {
+    action = "addGroup";
+    renderUserlist()
+    $("#groupname").removeClass("is-invalid");
+    $("#actionInput").val("add_group")
+    $("#groupname").attr("disabled", false);
+    $("#groupFormModal").find("h4").html("Add Group");
+    $("#groupname").val('');
+    $("#userChoiceInput_dualbox").bootstrapDualListbox('refresh', true);
+    $("#groupFormModal").modal("show");
+  }
+
+function renderUserlist(){
+    $("#userChoiceInput_dualbox").find("option").remove();
+      $.each(list_user, function(key, values)
+      {
+          let html_row = `<option value=${values.id}> ${values.username} </option>`
+          $(html_row).appendTo($("#userChoiceInput_dualbox"));
+      });
+    $("#userChoiceInput_dualbox").bootstrapDualListbox('refresh', true);
+}
+
+function editGroup(data){
+  let val_id = [];
+  renderUserlist()
+  $("#groupname").removeClass("is-invalid");
+  $("#actionInput").val("edit_group")
+  $("#groupFormModal").find("h4").html("Edit Group");
+  $("#groupname").val(data.group_name);
+  $("#groupname").attr("disabled", true);
+  $("#idGroup").val(data.id);
+  $.each(data.user, function(key, values){
+        $("#userChoiceInput_dualbox").find(`option[value='${(values).toString()}']`).attr('selected', 'selected');
+  });
+    $("#userChoiceInput_dualbox").bootstrapDualListbox('refresh', true);
+  $("#groupFormModal").modal("show");
+}
+
+
+function deleteGroup(){
+    let uri = url + '/save_group';
+    action = "delete_group";
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+      if (result.value) {
+        $.ajax({
+          dataType: "json",
+          type: "post",
+          data: JSON.stringify({
+            "action": action,
+            "id": GroupData.id
+          }),
+          url: uri,
+          contentType: "application/json",
+          beforeSend: () => {
+           
+          },
+          complete: () => {
+             $("#groupFormModal").modal("hide");
+              get_all_group();
+          },
+          success: (resp) => {
+            //console.log(resp)
+            if (resp.status === true) {
+                showSuccessNoti("Success");
+            } else {
+              showErrorNoti("Delete Error");
+            }
+          },
+          error: function (xhr, status, error) {
+            var err = eval("(" + xhr.responseText + ")");
+            showErrorNoti(err.msg);
+          }
+        });
+      }
+    });
+  }
+
+function saveData(){
+  let validate = false;
+  let uri = url + '/save_group'
+  let action = $('#actionInput').val();
+  let groupname= $('#groupname').val();
+  let user_id = $('#userChoiceInput_dualbox').val();
+  let id = GroupData.id;
+  let JsonData = {
+    action: action,
+    id : id,
+    groupname : groupname,
+    user_id : user_id
+  };
+  $("#groupname").removeClass("is-invalid");
+  if ($("#groupname").val() == undefined || $("#groupname").val() == '') {
+      $("#groupname").addClass("is-invalid");
+      return;
+  }
+  else{
+    validate = true
+  }
+  if(validate === true){
+  Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, save it!'
+    }).then((result) => {
+      if(result.value){
+        $.ajax({
+          dataType: "json",
+          type: "post",
+          data: JSON.stringify(JsonData),
+          url: uri,
+          contentType: "application/json",
+          beforeSend: () => {},
+          complete: () => {
+            $("#groupFormModal").modal("hide");
+          },
+          success: (resp) => {
+            if (resp.status === true) {
+                showSuccessNoti("Success");
+                get_all_group();
+            } else {
+              showErrorNoti("System error OR name already exists");
+            }
+          },
+          error: function (xhr, status, error) {
+            var err = eval("(" + xhr.responseText + ")");
+            showErrorNoti("System error OR name already exists");}
+        });
+      }
+    });}
+}
+
+$(document).ready(function(){
+    get_all_group();
+    monitorSelect = $('#userChoiceInput_dualbox').bootstrapDualListbox({});
+
+    table = $('#groupTable').DataTable({
+      "lengthMenu": [10, 50, 75, 100, 200, 250],
+      "order": [[0, "desc"]],
+      "columnDefs": [
+        { "orderable": false, "targets": [] },
+        { "orderable": false, "targets": [0, 1, 2] },
+        { "searchable": true, "targets": [1,2] },
+        { "searchable": false, "targets": [1, 2] },
+      ],
+      "paging": true,
+      "lengthChange": true,
+      "searching": true,
+      "ordering": false,
+      "info": true,
+      "autoWidth": false,
+      "responsive": false,
+      "columns": [
+        {
+          "title": "ID",
+          "width": "75px",
+          "data": 'id',
+        },
+        {
+          "title": "Group Name",
+          "width": "75px",
+          "data": 'group_name',
+        },
+        {
+          "title": "Actions",
+          "width": "75px",
+          "data": 'id',
+          "render": function (data, type, row) {
+            let html = '<center><button data-action="editGroup" type="button" class="btn btn-info btn-sm"><i class="fa fas fa-edit"></i></button>&nbsp; <button data-action="deleteGroup" type="button" class="btn btn-danger btn-sm"><i class="fa fas fa-trash"></i></button></center>';
+            return html;
+          }
+        }
+      ]
+    });
+
+    $('.select2bs4').select2({
+      placeholder: {
+        id: '-1',
+        text: 'Select an option'
+      },
+        theme: 'bootstrap4'
+    });
+
+
+    $('#groupTable tbody').on('click', 'button', function () {
+      action = $(this).data('action');
+      GroupData.updated_at = new Date().getTime() / 1000;
+      GroupData.id = $(this).parents('tr').find('td:eq(0)').text();
+      let data = table.row($(this).parents('tr')).data();
+      switch (action) {
+        case 'editGroup':
+          editGroup(data)
+          break;
+        case 'deleteGroup':
+          deleteGroup();
+          break;
+      }
+    });
+})
+</script>
+{% endblock %}

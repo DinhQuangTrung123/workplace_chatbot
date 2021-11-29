@@ -1,0 +1,797 @@
+{% extends "html/admin_layout.html" %}
+{% block content %}
+<div class="content">
+  <!-- Content Header (Page header) -->
+  <div class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+
+        </div><!-- /.col -->
+        <div class="col-sm-6">
+        </div><!-- /.col -->
+      </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+  </div>
+  <!-- /.content-header -->
+  <div class="content">
+    <div class="container-fluid">
+      <div class="row">
+          <div class="col-8">
+            <button class="btn btn-primary" onclick="addCampaign()">Add <i class="fas fa-plus"></i></button>
+          </div>
+          <div class="col-4">
+              <select id="statusSelectdisplay" onchange="statusfunctions()" class="form-control">
+                  <option value="1">Enabled</option>
+                  <option value="0">Disabled</option>
+              </select>
+          </div>
+        </div>
+      </div>
+      <!-- /.row -->
+    </div><!-- /.container-fluid -->
+  </div>
+  <!-- Main content -->
+  <br />
+  <div class="content">
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-12 col-sm-12 col-12">
+          <div class="card card-primary">
+            <div class="card-header">
+              <h3 class="card-title">Campaign Lists</h3>
+            </div>
+            <!-- /.card-header -->
+            <!-- form start -->
+            <div class="card-body">
+              <table id='campaignTalbe' class="table table-bordered table-striped">
+                <thead></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <!-- /.card-body -->
+          </div>
+          <!-- /.info-box -->
+        </div>
+      </div>
+      <!-- /.row -->
+    </div><!-- /.container-fluid -->
+  </div>
+  <!-- /.content -->
+</div>
+<div class="modal fade" id="CampaignFormModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title"><!--input name modal--></h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Campaign Name</label>
+          <input id="nameCampaignInput" type="text" class="form-control" placeholder="Enter name">
+        </div>
+        <div class="form-group">
+          <label>Campaign Group</label>
+            <select  id="groupCampaignInput" class="form-control" >
+              <option value="-1">-- Please Select --</option>
+            </select>
+        </div>
+        <div class="form-group">
+          <label>Campaign Content</label>
+            <label>Select</label>
+            <select id="campaigncontent" class="form-control" multiple="multiple">
+            </select>
+        </div>
+        <div class="row">
+        <div class="col-6">
+            <label>day</label>
+            <input type="text" id="datestartend" class="form-control"  name="datetimes" />
+        </div>
+        <div class="col-6">
+        <label>Time </label>
+            <input type="time" id="timestartend" class="form-control" />
+        </div>
+      </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="statusSelect" class="form-control col-md-6 col-sm-6 col-12">
+            <option value="-1">--Please Select--</option>
+            <option value="0">Disabled</option>
+            <option value="1">Enabled</option>
+          </select>
+        </div>
+
+      </div>
+      <div class="modal-footer justify-content-between">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="saveData()">Save changes</button>
+      </div>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="DetailCampaignModal">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title"><!--input name modal--></h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <div class="row">
+            <div class="col-6">
+              <label>Campaign Name</label>
+              <input id="nameCampaignDetail" type="text" class="form-control" placeholder="Enter name">
+            </div>
+            <div class="col-6">
+              <label>Campaign Group</label>
+              {% comment %} <input id="groupCampaignInput" type="text" class="form-control" placeholder="Enter name">  {% endcomment %}
+                <select id="CampaignGroupDetail" class="form-control">
+                    {% comment %} <option  value="Audi" selected>Audi</option>  {% endcomment %}
+                </select> 
+              {% comment %} <input id="CampaignGroupDetail" type="text" class="form-control" placeholder="Enter name"> {% endcomment %}
+           </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="row">
+          <div class="col-12">
+              <div class="card">
+              <div class="card-header">
+              <label>Content Table</label>
+                <select id="CampaigncontentDetail" class="form-control" multiple="multiple">
+                  
+                </select> 
+              </div>
+              
+            </div>
+          </div>
+        </div>
+        </div>
+        <div class="form-group">
+          <div class="row">
+                <div class="col-4">  
+                  <input type="text" id="timestartendDetail" class="form-control"  name="datetimes" />
+                </div>
+                <div class="col-3">  
+                  <input type="time" id="timestartendDetailupdate" class="form-control"/>
+                </div>
+                <div class="col-5">
+                    <!---<label>Status</label>-->
+                    <select id="StatusDetails" class="form-control col-md-6 col-sm-6 col-12">
+                        <option value="0">Disabled</option>
+                        <option value="1">Enabled</option>
+                  </select>
+              </div>
+          </div>
+        </div>
+        <div class="form-group">
+        <div class="row">
+          <div class="col-4">
+            <label>Created At</label>
+            <input id="CreatedAtDetail" type="text" class="form-control" placeholder="Enter name">
+          </div>
+          <div class="col-2">
+            <label>Created By</label>
+            <input id="CreatedbyDetail" type="text" class="form-control" placeholder="Enter name">
+          </div>
+          <div class="col-4">
+            <label>Modified At</label>
+            <input id="ModifiedAtDetail" type="text" class="form-control" placeholder="Enter name">
+          </div>
+          <div class="col-2">
+            <label>Modified By</label>
+            <input id="ModifiedByDetail" type="text" class="form-control" placeholder="Enter name">
+          </div>
+        </div>
+        </div>
+      </div>
+      <div class="modal-body">
+      </div>
+      <div class="modal-footer justify-content-between">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="saveDataUpdate()">Save changes</button>
+      </div>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
+<script>
+  let url = '/api/campaign/';
+  var iduser=$("#iduser").attr("value")
+  let action, table, localData;
+  let campaignData = {
+    'Campaign_Name': '',
+    'Campaign_Content':[1],
+    'Campaign_Status': '',
+    'Campaign_Starttime':'',
+    'Campaign_Endtime':'',
+    'Create_At': null,
+    'Create_By':parseInt(iduser),
+    'Modified_At': null,
+    'Modified_By': parseInt(iduser),
+    "Campaign_Group":0,
+    "session_user" : $("#user_session").text()
+  }
+
+    function getTimeRange(inputTime){
+      let today, month, day, year, firstDayOfMonth, lastDayOfMonth;
+      if (inputTime === undefined || inputTime ==='') {
+        today = new Date();
+      } else {
+        inputTime = inputTime.split("-")
+        today = new Date(inputTime[0], inputTime[1], 0);
+      }
+
+      year = ''+today.getFullYear();
+      month = '' + (today.getMonth() + 1);
+      firstDayOfMonth = '01';
+      if (month.length < 2)
+        month = '0' + month;
+      firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      lastDayOfMonth = new Date(today.getFullYear(), today.getMonth()+1, 0);
+      return [[year, month, '01'].join('-'), [year, month, lastDayOfMonth.getDate()].join('-')];
+    }
+
+
+  function statusfunctions() {
+      var x = document.getElementById("statusSelectdisplay").value;
+      loadData();
+    }
+
+  function renderTable(data) {
+    table.clear();
+    table.rows.add(data)
+    table.draw();
+    //displaystatus =parseInt($('select#statusSelectdisplay option').filter(":selected").val())
+  }
+
+
+  $(function() {
+  $('input[name="datetimes"]').daterangepicker({
+    locale: {
+      format: 'YYYY/MM/DD'
+    }
+  });
+});
+
+  function addCampaign() {
+    action = "addCampaign";
+    campaignData.Created_At = new Date().getTime() / 1000;
+
+    $("#nameCampaignInput").removeClass("is-invalid")
+    $("#groupCampaignInput").removeClass("is-invalid")
+    $("#campaigncontent").removeClass("is-invalid")
+    $("#timestartend").removeClass("is-invalid")
+    $("#statusSelect").removeClass("is-invalid")
+    $("#statusSelect").val(-1)
+    $("#groupCampaignInput").val(-1)
+    $("#campaigncontent").val(-1)
+    
+
+    $("#nameCampaignInput").val('');
+    $("#contentCampaignInput").val('');
+    $("#TimeStartDetail").val(campaignData.Created_At);
+    $("#TimeEndDetail").val(campaignData.Created_At);
+    //$("#statusSelect").val(-1);
+    $("#CreatedAtDetail").val('');
+    $("#CreatedbyDetail").val('');
+    $("#ModifiedAtDetail").val('');
+    $("#ModifiedByDetail").val('');
+    $("#StatusDetails").attr("disabled", false);
+    //$("#CampaignSelect").attr("disabled", false);
+
+    $("#CampaignFormModal").find("h4").html("Add Campaign");
+    $("#CampaignFormModal").modal("show");
+  }
+
+  function saveData() {
+    //let uri = url + '/APICampaign';
+    let validate = false;
+
+    if ($("#nameCampaignInput").val() == undefined || $("#nameCampaignInput").val() == '') {
+      $("#nameCampaignInput").addClass("is-invalid");
+      return;
+    }else if ($("#groupCampaignInput").val() == -1 || $("#groupCampaignInput").val() == '') {
+      $("#groupCampaignInput").addClass("is-invalid");
+      return;
+    }else if ($("#campaigncontent").val() == undefined || $("#campaigncontent").val() == '') {
+      $("#campaigncontent").addClass("is-invalid");
+      return;
+    }else if ($("#timestartend").val() == undefined || $("#timestartend").val() == '') {
+      $("#timestartend").addClass("is-invalid");
+      return;
+    }else if ($("#statusSelect").val() == -1 || $("#statusSelect").val() == '') {
+      $("#statusSelect").addClass("is-invalid");
+      return;
+    }else{
+      validate=true
+    }
+    
+    if (validate == true) {
+      let campaigncontentselect= $("#campaigncontent option:selected").toArray().map(item => parseInt(item.value));
+      let b = $("#groupCampaignInput option:selected").attr("value")
+      campaignData.Campaign_Name = $("#nameCampaignInput").val();
+      campaignData.Campaign_Content =campaigncontentselect
+      campaignData.Campaign_Starttime = $("#timestart").val();
+      campaignData.Campaign_Endtime = $("#timeend").val();
+      campaignData.Campaign_Group = parseInt(b)
+      campaignData.Campaign_Status = parseInt($("#statusSelect").val())
+
+      
+      
+
+      datestartend =  $("#datestartend").val();
+      timestartend = $('#timestartend').val();
+      datetimesplit=datestartend.split('-')
+      
+      datetimetrimreplacestart = datetimesplit[0].trim().replace(/\//g,'-') +' '+timestartend +':00'
+      datetimetrimreplaceend = datetimesplit[1].trim().replace(/\//g,'-') +' '+timestartend +':00'
+
+      Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, save it!'
+      }).then((result) => {
+        if (result.value) {
+          $.ajax({
+            dataType: "json",
+            type: "post",
+            data: JSON.stringify({
+              "action": action,
+              "Campaign_Name":campaignData.Campaign_Name,
+              "Campaign_Status": campaignData.Campaign_Status,
+              "Campaign_Starttime": datetimetrimreplacestart,//timestartendresultsplit[0].trim(),//campaignData.Campaign_Starttime,
+              "Campaign_Endtime": datetimetrimreplaceend,//timestartendresultsplit[1].trim(),
+              "Campaign_Group": campaignData.Campaign_Group,
+              "Create_By": iduser,
+              "Modified_By": iduser,
+              "Campaign_Content":campaignData.Campaign_Content
+            }),
+            url:'/api/campaign/create_campaign/',
+            contentType: "application/json",
+            beforeSend: () => {
+
+            },
+            complete: () => {
+                console.log(campaignData)
+                $("#CampaignFormModal").modal("hide");
+                loadData();
+            },
+            success: (resp) => {
+              showSuccessNoti(resp.messges);
+            },
+            error: function (xhr, status, error) {
+              if (parseInt(xhr.status) === 401) {
+                window.location.href = '/login';
+              } else if (parseInt(xhr.status) === 403) {
+                window.location.href = '/error/' + xhr.status;
+              }
+              var err = eval("(" + xhr.responseText + ")");
+              showErrorNoti(err.messges);
+            }
+          });
+        }
+      });
+    }
+  }
+
+
+  function saveDataUpdate() {
+    let validate = false;
+    validate = true
+    if (validate == true) {
+      let campaigncontentselect= $("#CampaigncontentDetail option:selected").toArray().map(item => parseInt(item.value));
+      let b = $("#CampaigncontentDetail option:selected").attr("value")
+      campaignData.Campaign_Name = $("#nameCampaignDetail").val();
+      campaignData.Campaign_Content =campaigncontentselect
+      campaignData.Campaign_Starttime = $("#TimeStartDetail").val();
+      campaignData.Campaign_Endtime = $("#TimeEndDetail").val();
+      campaignData.Campaign_Group =  $("#CampaignGroupDetail").val()
+      campaignData.Campaign_Status = parseInt($("#StatusDetails").val())
+      campaignData.Create_By = $("#CreatedbyDetail").val()
+
+     
+      datestartend =  $("#timestartendDetail").val();
+      timestartend = $('#timestartendDetailupdate').val();
+      datetimesplit=datestartend.split('-')
+      
+      datetimetrimreplacestart = datetimesplit[0].trim().replace(/\//g,'-') +' '+timestartend +':00'
+      datetimetrimreplaceend = datetimesplit[1].trim().replace(/\//g,'-') +' '+timestartend +':00'
+
+      Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, save it!'
+      }).then((result) => {
+        if (result.value) {
+          $.ajax({
+            dataType: "json",
+            type: "put",
+            url:'/api/campaign/campaign_edit/'+campaignData.id,
+            contentType: "application/json",
+            data: JSON.stringify({
+              "Campaign_Name":campaignData.Campaign_Name,
+              "Campaign_Status": campaignData.Campaign_Status,
+              //2021-11-16 13:48:00
+              "Campaign_Starttime": datetimetrimreplacestart,//campaignData.Campaign_Starttime,
+              "Campaign_Endtime": datetimetrimreplaceend,
+              //"Create_By": campaignData.Create_By,
+              //"Modified_By": campaignData.Modified_By,
+              "Campaign_Group": campaignData.Campaign_Group,
+              "Create_By": campaignData.Create_By,
+              "Modified_By": iduser,//campaignData.Modified_By,
+              "Campaign_Content":campaignData.Campaign_Content
+            }),
+            beforeSend: () => {
+
+            },
+            complete: (resp) => {
+                $("#DetailCampaignModal").modal("hide");
+                loadData();
+            },
+            success: (resp) => {
+              showSuccessNoti(resp.messges);
+             
+            },
+            error: function (xhr, status, error) {
+              if (parseInt(xhr.status) === 401) {
+                window.location.href = '/login';
+              } else if (parseInt(xhr.status) === 403) {
+                window.location.href = '/error/' + xhr.status;
+              }
+              var err = eval("(" + xhr.responseText + ")");
+              showErrorNoti(err.msg);
+            }
+          });
+        }
+      });
+    }
+  }
+
+  function s2ab(s) {
+                var buf = new ArrayBuffer(s.length); //convert s to arrayBuffer
+                var view = new Uint8Array(buf);  //create uint8array as viewer
+                for (var i=0; i<s.length; i++) view[i] = s.charCodeAt(i) & 0xFF; //convert to octet
+                return buf;
+}
+
+function loadData() {
+    let uri = '/api/campaign/list_campaign_getall/';
+    let status_ = $("#statusSelectdisplay").val()
+    console.log(status_)
+    $.getJSON(uri, {'status' : status_} ,function (resp) {
+      localData = resp
+      renderTable(localData);
+    });
+  }
+
+
+function rendercampaigncontent() {
+    let url = "/api/content/list_content/";
+    $.getJSON(url, function (resp) {
+          let data = resp
+          for (let i = 0; i < data.length; i++) {
+            $("#campaigncontent").append("<option value= " + data[i].id + " >" + data[i].Campaign_Name + "</option>");
+          }
+    });
+  }
+
+
+
+function renderGroupSelect() {
+    let url='/api/user/groupcampaign';
+    $.getJSON(url, function (resp) {
+          let data = resp
+          for (let i = 0; i < data.length; i++) {
+            $("#groupCampaignInput").append("<option value=" + data[i].id + ">" + data[i].group_name + "</option>");
+          }
+    });
+  }
+
+
+
+function renderGroupSelectedit() {
+    let url = "/api/user/groupcampaign";
+    $.getJSON(url, function (resp) {
+          let data = resp
+          for (let i = 0; i < data.length; i++) {
+            $("#CampaignGroupDetail").append("<option value=" + data[i].id + ">" + data[i].group_name + "</option>");
+          }
+    });
+  }
+
+
+function CampaigncontentDetailedit() {
+    let url = "/api/content/list_content/";
+    $.getJSON(url, function (resp) {
+          let data = resp
+          for (let i = 0; i < data.length; i++) {
+            $("#CampaigncontentDetail").append("<option value=" + data[i].id + ">" + data[i].Campaign_Name + "</option>");
+          }
+    });
+  }
+
+
+  
+
+function showContentDetail(data_show){
+  let list_id_val = []
+  let grd_id_Val = []
+  $.each(data_show.Campaign_Content, function(key,values){
+      list_id_val.push((values.id).toString())
+  });
+
+  $("#CampaignGroupDetail").val(data_show.Campaign_Group)
+  $('#CampaigncontentDetail').val(list_id_val).trigger('change');
+  $("#nameCampaignDetail").val(data_show.Campaign_Name)
+
+  createdDatetimestart = new Date(data_show.Campaign_Starttime);
+  createdDatetimeend = new Date(data_show.Campaign_Endtime);
+  datetimestartformat=moment(createdDatetimestart).format("YYYY/MM/DD HH:mm")
+  //day12=moment(createdDatetimeend).format("YYYY/MM/DD HH:mm")
+
+   function checkTime(i) {
+        return (i < 10) ? "0" + i : i;
+      }
+  let createdtime = new Date(datetimestartformat)
+  gettime = checkTime(createdtime.getHours()) +":"+ checkTime(createdtime.getMinutes())
+  $('#timestartendDetailupdate').val(gettime)
+ 
+
+  $("#timestartendDetail").data('daterangepicker').setStartDate(createdDatetimestart);
+  $("#timestartendDetail").data('daterangepicker').setEndDate(createdDatetimeend);
+ 
+  $("#StatusDetails").val(data_show.Campaign_Status)
+  $("#TimeStartDetail").val(data_show.Campaign_Starttime)
+  let tbody_content = "";
+  $("#tbodyContentDetail").html(tbody_content)
+  $("#TimeEndDetail").val(data_show.Campaign_Endtime)
+ 
+  $("#CreatedAtDetail").val(data_show.Create_At)
+  $("#CreatedAtDetail").attr("disabled", "disabled")
+  $("#CreatedbyDetail").val(data_show.Create_By)
+  $("#CreatedbyDetail").attr("disabled", "disabled")
+  $("#ModifiedAtDetail").val(data_show.Modified_At)
+  $("#ModifiedAtDetail").attr("disabled", "disabled")
+  $("#ModifiedByDetail").val(data_show.Modified_By)
+  $("#ModifiedByDetail").attr("disabled", "disabled")
+  $("#DetailCampaignModal").modal("show");
+}
+
+
+function deleteCampaign(){
+  Swal.fire({
+        title: 'Are you sure?',
+        text: " You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, save it!'
+      }).then((result) => {
+        if(result.value){
+          //showSuccessNoti('Success')
+          $.ajax({
+            dataType: "json",
+            type: "delete",
+            url: '/api/campaign/campaign_delete/'+campaignData.id,
+            contentType: "application/json",
+            complete: (resp) => {
+            },
+            success: function(resp) {
+              if (resp.status === true) {
+                  showSuccessNoti(resp.messges);
+                  loadData()
+              } else {
+                showErrorNoti(resp.messges);
+              }
+            },
+            error: function (xhr, status, error) {
+              if (parseInt(xhr.status) === 401) {
+                window.location.href = '/login';
+              } else if (parseInt(xhr.status) === 403) {
+                window.location.href = '/error/' + xhr.status;
+              }
+              var err = eval("(" + xhr.responseText + ")");
+              showErrorNoti(err.msg);
+            }
+          });
+        
+        }
+      });
+}
+
+function SendCampaign(data){
+  let data_send= {
+      "campaign_id" : data.id,
+      "campaign_name" : data.Campaign_Name,
+      "Campaign_Content": data.Campaign_Content,
+      "Campaign_Group": data.Campaign_Group,
+      "Campaign_Status" : data.Campaign_Status,
+      "created_At" : data.Create_At,
+      "Created_By" : data.Create_By,
+      "session_user" : campaignData.session_user
+  };
+  Swal.fire({
+        title: 'Are you sure you want to send it now ?',
+        text: " You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, save it!'
+      }).then((result) => {
+        if (result.value) {
+          $.ajax({
+            dataType: "json",
+            type: "post",
+            data: JSON.stringify({
+              data_send
+            }),
+            url: 'send_messger/',
+            contentType: "application/json",
+            beforeSend: () => {
+
+            },
+            complete: () => {
+
+            },
+            success: (resp) => {
+              if (resp.state === true) {
+                if (resp.status === 200) {
+                  showSuccessNoti(resp.msg);
+                  $("#CampaignFormModal").modal("hide");
+                  loadData();
+                }
+              } else {
+                showErrorNoti(resp.msg);
+              }
+            },
+            error: function (xhr, status, error) {
+              if (parseInt(xhr.status) === 401) {
+                window.location.href = '/login';
+              } else if (parseInt(xhr.status) === 403) {
+                window.location.href = '/error/' + xhr.status;
+              }
+              var err = eval("(" + xhr.responseText + ")");
+              showErrorNoti(err.msg);
+            }
+          });
+        }
+      });
+}
+
+  $(document).ready(function () {
+    let time_ = getTimeRange()
+    loadData();
+    CampaigncontentDetailedit()
+    renderGroupSelectedit();
+    renderGroupSelect();
+    rendercampaigncontent();
+    table = $('#campaignTalbe').DataTable({
+      "lengthMenu": [10, 50, 75, 100, 200, 250],
+      "order": [[0, "desc"]],
+      "columnDefs": [
+        { "orderable": true, "targets": [0] },
+        { "orderable": false, "targets": [0] },
+        { "searchable": true, "targets": [0] },
+        { "searchable": false, "targets": [1, 2] },
+      ],
+      "paging": true,
+      "lengthChange": true,
+      "searching": true,
+      "ordering": true,
+      "info": true,
+      "autoWidth": false,
+      "responsive": true,
+      "columns": [
+        {
+          "title": "#",
+          "width": "30px",
+          "data": 'id',
+          //"render": function (data, type, row) {}
+        },
+        {
+          "title": "Campaign Name",
+          "width": "125px",
+          "data": 'Campaign_Name',
+        },
+        {
+          "title": "Status",
+          "width": "75px",
+          "data": 'Campaign_Status',
+          "render": function (data, type, row) {
+            let html;
+            if (data === 0){
+              html = '<center><span class="badge bg-danger">Disabled</span></center>';
+              return html
+            }else{
+              html = '<center><span class="badge bg-success">Enabled</span></center>';
+              return html
+            }
+          }
+            /*
+            switch (data) {
+              case 0:
+                html = '<center><span class="badge bg-danger">Disabled</span></center>';
+                break;
+              case 1:
+                html = '<center><span class="badge bg-success">Enabled</span></center>';
+                break;
+            }
+            return html;
+          }*/
+        },
+        {
+          "title": "Time Start",
+          "width": "125px",
+          "data": 'Campaign_Starttime'
+        },
+        {
+          "title": "Time End",
+          "width": "125px",
+          "data": 'Campaign_Endtime'
+        },
+        {
+          "title": "Actions",
+          "width": "75px",
+          "data": 'id',
+          "render": function (data, type, row) {
+            let uri = "/" + url + "/update_route" + "/" + row.acc_id;
+            let html = '<center><button data-action="sendCapaign" type="button" class="btn btn-warning btn-sm"><i class="fa fa-paper-plane"></i></button>&nbsp;<button data-action="deleteCampaign" type="button" class="btn btn-danger btn-sm"><i class="fa fas fa-trash"></i></button>&nbsp<button data-action="updatecampaign" type="button" class="btn btn-info btn-sm"><i class="fa fas fa-edit"></i></button>&nbsp</center>';
+            return html;
+          }
+        }
+      ]
+    });
+
+
+
+    $('#campaignTalbe tbody').on('click', 'button', function () {
+
+      action = $(this).data('action');
+     // campaignData.updated_at = new Date().getTime() / 1000;
+      campaignData.id = $(this).parents('tr').find('td:eq(0)').text();
+      $("#nameCampaignInput").attr("disabled", false);
+      let id_row = $(this).parents('tr').find('td:eq(0)').text()
+      let dataShowDetail;
+        $.each(localData ,function(key, value){
+            if(value.id == id_row){
+                dataShowDetail = value}
+          });
+      switch (action) {
+        case 'updatecampaign':
+          showContentDetail(dataShowDetail)
+          break;
+        case 'deleteCampaign':
+          deleteCampaign();
+          break;
+        case 'sendCapaign':
+          SendCampaign(dataShowDetail);
+          break;
+      }
+
+    });
+  });
+</script>
+{% endblock %}

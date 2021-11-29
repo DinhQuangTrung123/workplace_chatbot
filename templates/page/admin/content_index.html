@@ -1,0 +1,414 @@
+{% extends "html/admin_layout.html" %}
+{% block content %}
+<div class="content">
+  <!-- Content Header (Page header) -->
+  <div class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+
+        </div><!-- /.col -->
+        <div class="col-sm-6">
+        </div><!-- /.col -->
+      </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+  </div>
+  <!-- /.content-header -->
+  <div class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-12 col-sm-12 col-12">
+          <button class="btn btn-primary" onclick="addContent()">Add <i class="fas fa-plus"></i></button>
+        </div>
+      </div>
+      <!-- /.row -->
+    </div><!-- /.container-fluid -->
+  </div>
+  <!-- Main content -->
+  <br />
+  <div class="content">
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-12 col-sm-12 col-12">
+          <div class="card card-primary">
+            <div class="card-header">
+              <h3 class="card-title">Contents Lists</h3>
+            </div>
+            <!-- /.card-header -->
+            <!-- form start -->
+            <div class="card-body">
+              <table id='ContentTalbe' class="table table-bordered table-striped">
+                <thead></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <!-- /.card-body -->
+          </div>
+          <!-- /.info-box -->
+        </div>
+      </div>
+      <!-- /.row -->
+    </div><!-- /.container-fluid -->
+  </div>
+  <!-- /.content -->
+</div>
+<div class="modal fade" id="ContentFormModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title"><!--input name modal--></h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Content Name</label>
+          <input id="nameContentInput" type="text" class="form-control" placeholder="Enter name">
+        </div>
+        <div class="form-group">
+          <label>Content Content</label>
+          <textarea id="textContentInput" class="form-control" placeholder="Enter note"></textarea>
+        </div>
+        <div class="form-group">
+          <input id="owner" type="text" style="display: none;">
+        </div>
+      </div>
+      <div class="modal-footer justify-content-between">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="saveData()">Save changes</button>
+      </div>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>
+
+<script>
+  let url = '/api/content/';
+  var iduser=$("#iduser").attr("value")
+  let ContentData = {
+    "Campaign_Name": "",
+    "Campaign_Content": "",
+    "Create_By": iduser,
+    "iduser":iduser,
+    "Modified_By":iduser
+  }
+
+  function addContent() {
+    action = "addContent";
+    //contentData.created_at = new Date().getTime() / 1000;
+
+    $("#nameContentInput").val('');
+    $("#textContentInput").val('');
+    $("#ContentSelect").attr("disabled", false);
+
+    $("#ContentFormModal").find("h4").html("Add Content");
+    $("#ContentFormModal").modal("show");
+  }
+
+  function saveData(){
+    //let uri = url + 'create_content/'
+    action = "saveContent";
+    //ContentData.created_at = new Date().getTime() / 1000;
+    let validate = false;
+    console.log(ContentData.action)
+    $("#nameContentInput").removeClass("is-invalid");
+    $("#textContentInput").removeClass("is-invalid");
+
+    if ($("#nameContentInput").val() == undefined || $("#nameContentInput").val() == '') {
+      $("#nameContentInput").addClass("is-invalid");
+      return;
+    }
+    else if ($("#textContentInput").val() == undefined || $("#textContentInput").val() == '') {
+      $("#textContentInput").addClass("is-invalid");
+      return;
+    }
+    else {
+      validate = true;
+    }
+
+    if (validate == true){
+        ContentData.Campaign_Name = $("#nameContentInput").val();
+        ContentData.Campaign_Content = $("#textContentInput").val();
+        console.log(ContentData.id)
+      Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, save it!'
+      }).then((result) => {
+        if (result.value==true) {
+          $.ajax({
+            dataType: "json",
+            type: "post",
+            url: '/api/content/create_content/',
+            contentType: "application/json",
+            cache: false,
+            data: JSON.stringify({
+              "action": ContentData.action,
+              "user":iduser,
+              "id":ContentData.id,
+              'Campaign_Name': ContentData.Campaign_Name,
+              'Campaign_Content': ContentData.Campaign_Content,
+              'Create_By': ContentData.Create_By,
+              'Modified_By': ContentData.Modified_By
+
+            }),
+            complete: (resp) => {
+                $("#ContentFormModal").modal("hide");
+                loadData()
+            },
+            success: function(resp) {
+              console.table(resp)
+              console.log(ContentData)
+              if (resp.state === true) {
+                  showSuccessNoti(resp.messges);
+
+              } else {
+                showErrorNoti(resp.messges);
+              }
+            },
+            error: function (xhr, status, error) {
+              if (parseInt(xhr.status) === 401) {
+                window.location.href = '/login';
+              } else if (parseInt(xhr.status) === 403) {
+                window.location.href = '/error/' + xhr.status;
+              }
+              var err = eval("(" + xhr.responseText + ")");
+              showErrorNoti(err.msg);
+            }
+          });
+        }
+      });
+    }
+  }
+
+  function loadData() {
+    let uri = url + 'list_content/';
+    $.getJSON(uri, function (resp) {
+      renderTable(resp);
+    });
+  }
+
+function renderTable(data) {
+    table.clear();
+    table.rows.add(data);
+    table.draw();
+  }
+  
+
+function deleteContent(){
+  Swal.fire({
+        title: 'Are you sure?',
+        text: " You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, save it!'
+      }).then((result) => {
+        if(result.value){
+          $.ajax({
+            dataType: "json",
+            type: "delete",
+            url: '/api/content/delete_content/'+ContentData.id,
+            contentType: "application/json",
+            complete: (resp) => {
+              $("#ContentFormModal").modal("hide");
+              loadData()
+            },
+            success: function(resp) {
+              if (resp.status === true) {
+                  showSuccessNoti(resp.messges);
+              } else {
+                showErrorNoti(resp.messges);
+              }
+            },
+            error: function (xhr, status, error) {
+              if (parseInt(xhr.status) === 401) {
+                window.location.href = '/login';
+              } else if (parseInt(xhr.status) === 403) {
+                window.location.href = '/error/' + xhr.status;
+              }
+              var err = eval("(" + xhr.responseText + ")");
+              showErrorNoti(err.msg);
+            }
+          });
+        
+        }
+      });
+}
+
+  function editContent(){
+    action = "updateContent";
+    let validate = false;
+
+    $("#nameContentInput").removeClass("is-invalid");
+    $("#textContentInput").removeClass("is-invalid");
+
+    if ($("#nameContentInput").val() == undefined || $("#nameContentInput").val() == '') {
+      $("#nameContentInput").addClass("is-invalid");
+      return;
+    }
+    else if ($("#textContentInput").val() == undefined || $("#textContentInput").val() == '') {
+      $("#textContentInput").addClass("is-invalid");
+      return;
+    }
+    else {
+      validate = true;
+    }
+
+    if (validate == true){
+        ContentData.Campaign_Name = $("#nameContentInput").val();
+        ContentData.Campaign_Content = $("#textContentInput").val();
+      Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, save it!'
+      }).then((result) => {
+        if (result.value==true) {
+          $.ajax({
+            dataType: "json",
+            type: "put",
+            url: '/api/content/edit_content/'+ContentData.id,
+            contentType: "application/json",
+            cache: false,
+            data: JSON.stringify({
+              'Campaign_Name': ContentData.Campaign_Name,
+              'Campaign_Content': ContentData.Campaign_Content,
+              'Create_By': ContentData.Create_By,
+              'Modified_By': ContentData.Modified_By
+            }),
+            complete: (resp) => {
+                $("#CampaignFormModal").modal("hide");
+                loadData()
+            },
+            success: function(resp) {
+              console.log("resp.messges", resp.messges)
+              if (resp.state === true) {
+                  showSuccessNoti(resp.messges);
+
+              } else {
+                showErrorNoti(resp.msg);
+              }
+            },
+            error: function (xhr, status, error) {
+              if (parseInt(xhr.status) === 401) {
+                window.location.href = '/login';
+              } else if (parseInt(xhr.status) === 403) {
+                window.location.href = '/error/' + xhr.status;
+              }
+              var err = eval("(" + xhr.responseText + ")");
+              showErrorNoti(err.msg);
+            }
+          });
+        }
+      });
+    }
+  }
+
+
+$(document).ready(function () {
+    loadData();
+    table = $('#ContentTalbe').DataTable({
+      "lengthMenu": [10, 50, 75, 100, 200, 250],
+      "order": [[1, "desc"]],
+      "columnDefs": [
+        { "orderable": true, "targets": [] },
+        { "orderable": false, "targets": [0, 1, 2] },
+        { "searchable": true, "targets": [1,2] },
+        { "searchable": false, "targets": [1, 2] },
+      ],
+      "paging": true,
+      "lengthChange": true,
+      "searching": true,
+      "ordering": true,
+      "info": true,
+      "autoWidth": false,
+      "responsive": false,
+      "columns": [
+        {
+          "title": "#",
+          "width": "30px",
+          "data": 'id',
+        },
+        {
+          "title": "Name",
+          "width": "125px",
+          "data": 'Campaign_Name',
+        },
+        {
+          "title": "content",
+          "width": "125px",
+          "data": 'Campaign_Content',
+          "render": function (data, type, row) {
+            let html = '<textarea cols="30" disabled>' + data + '</textarea>';
+            return html;
+          }
+        },
+        {
+          "title": "Created By",
+          "width": "125px",
+          "data": 'Create_By'
+        },
+        {
+          "title": "Created At",
+          "width": "125px",
+          "data": 'Create_At'
+        },
+        {
+          "title": "Updated By",
+          "width": "125px",
+          "data": 'Modified_By',
+        },
+        {
+          "title": "Updated At",
+          "width": "125px",
+          "data": 'Modified_At',
+        },
+        {
+          "title": "Actions",
+          "width": "75px",
+          "data": 'id',
+          "render": function (data, type, row) {
+            let uri = "/" + url + "/update_route" + "/" + row.acc_id;
+            let html = '<center><button data-action="updateContent" type="button" class="btn btn-info btn-sm"><i class="fa fas fa-edit"></i></button>&nbsp; <button data-action="deleteContent" type="button" class="btn btn-danger btn-sm"><i class="fa fas fa-trash"></i></button></center>';
+            return html;
+          }
+        }
+      ]
+    });
+
+
+    $('#ContentTalbe tbody').on('click', 'button', function () {
+      action = $(this).data('action');
+      ContentData.action = action
+      ContentData.id = $(this).parents('tr').find('td:eq(0)').text();
+      $("#nameContentInput").attr("disabled", false);
+      switch (action) {
+        case 'updateContent':
+          $("#ContentFormModal").find("h4").html("Update Content");
+          $("#nameContentInput").attr("disabled", true);
+          $("#nameContentInput").val($(this).parents('tr').find('td:eq(1)').text());
+          $("#textContentInput").val($(this).parents('tr').find('td:eq(2)').text());
+          $("#ContentFormModal").modal("show");
+          break;
+        case 'deleteContent':
+          deleteContent();
+          break;
+      }
+
+    });
+  });
+</script>
+<!-- /.modal -->
+{% endblock %}
