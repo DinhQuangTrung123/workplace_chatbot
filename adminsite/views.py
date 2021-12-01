@@ -183,6 +183,7 @@ class GetallListContentPostAPIView(
             idcontent=request.data.get("id")
             contentCampaign = List_Content_Campaign.objects.filter(id=idcontent)
             contentCampaign.update( 
+                        Modified_At = datetime.datetime.now(),
                         Campaign_Name=request.data.get("Campaign_Name"),
                         Campaign_Content=request.data.get("Campaign_Content"),
                         Modified_By=request.data.get("Modified_By"),
